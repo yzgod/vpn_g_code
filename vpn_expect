@@ -1,0 +1,23 @@
+set SH_HOME [lindex $argv 0]
+set token [lindex $argv 1]
+set user [lindex $argv 2]
+set jump_server [lindex $argv 3]
+
+spawn ssh -o StrictHostKeyChecking=no ${user}@${jump_server} -p 2222
+
+expect {
+    "*MFA auth" {
+        set code [exec python3 ${SH_HOME}/g_code3.py ${token}];
+        send "${code}\r";
+        exp_continue;
+    }
+    "*1)*" {
+        interact
+    }
+    -nocase "permission denied" {exit 1}
+    eof
+}
+
+
+
+
